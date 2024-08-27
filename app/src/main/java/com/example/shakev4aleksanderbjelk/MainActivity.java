@@ -22,8 +22,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    TextView textX , textY ,textZ ;
-    ProgressBar progressBarX, progressBarY, progressBarZ;
+    // De fyra olika funktionerna för att visa accelorometerns värden
+    TextView textX, textY, textZ;
     ProgressBar progressBarHX, progressBarHY, progressBarHZ;
     SeekBar SeekBarX, SeekBarY, SeekBarZ;
     ImageView imageView;
@@ -36,9 +36,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float Accel;
     float AccelCurrent;
     float AccelLast;
-    private boolean canShowToast = true;  // Flag to control toast display
+    private boolean canShowToast = true;
     private static final long TOAST_DELAY = 2000;
-
 
 
     @Override
@@ -47,13 +46,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        //Två olika sensorer, Accelerometer och en ljussensor
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-        progressBarX = findViewById(R.id.progressBarX);
-        progressBarY = findViewById(R.id.progressBarY);
-        progressBarZ = findViewById(R.id.progressBarZ);
 
         progressBarHX = findViewById(R.id.progressBarHX);
         progressBarHY = findViewById(R.id.progressBarHY);
@@ -73,54 +69,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         AccelCurrent = SensorManager.GRAVITY_EARTH;
         AccelLast = SensorManager.GRAVITY_EARTH;
 
-
-
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
     }
 
 
-
+    //Logiken för att kunna visa sensorernas värden i mina fyra funktioner
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-        float x = sensorEvent.values[0];
-        float y = sensorEvent.values[1];
-        float z= sensorEvent.values[2];
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
 
-        AccelLast = AccelCurrent;
-        AccelCurrent = (float) Math.sqrt((double) (x*x+y*y+z*z));
-        float delta = AccelCurrent - AccelLast;
-        Accel = Accel * 0.9f + delta;
+            AccelLast = AccelCurrent;
+            AccelCurrent = (float) Math.sqrt((double) (x * x + y * y + z * z));
+            float delta = AccelCurrent - AccelLast;
+            Accel = Accel * 0.9f + delta;
 
-        textX.setText("X : " + (int) x + "rad s/m");
-        textY.setText("Y : " + (int) y + "rad s/m");
-        textZ.setText("Z : " + (int) z + "rad s/m");
+            textX.setText("X : " + (int) x + "rad s/m");
+            textY.setText("Y : " + (int) y + "rad s/m");
+            textZ.setText("Z : " + (int) z + "rad s/m");
 
-        progressBarX.setProgress((int) Math.abs(x)*10);
-        progressBarY.setProgress((int) Math.abs(y)*10);
-        progressBarZ.setProgress((int) Math.abs(z)*10);
+            progressBarHX.setProgress((int) Math.abs(x) * 10);
+            progressBarHY.setProgress((int) Math.abs(y) * 10);
+            progressBarHZ.setProgress((int) Math.abs(z) * 10);
 
-        progressBarHX.setProgress((int) Math.abs(x)*10);
-        progressBarHY.setProgress((int) Math.abs(y)*10);
-        progressBarHZ.setProgress((int) Math.abs(z)*10);
-
-        SeekBarX.setProgress((int) Math.abs(x)*10);
-        SeekBarY.setProgress((int) Math.abs(y)*10);
-        SeekBarZ.setProgress((int) Math.abs(z)*10);
+            SeekBarX.setProgress((int) Math.abs(x) * 10);
+            SeekBarY.setProgress((int) Math.abs(y) * 10);
+            SeekBarZ.setProgress((int) Math.abs(z) * 10);
 
 
-        if (Accel > 2 && canShowToast) {
-            Toast toast = Toast.makeText(getApplicationContext(), "SLUTA SKAKA MIG", Toast.LENGTH_LONG);
-            toast.show();
-            canShowToast = false;
-            new Handler().postDelayed(() -> canShowToast = true, TOAST_DELAY);
-        }
-        imageView.setRotation(x*10);
+            if (Accel > 2 && canShowToast) {
+                Toast toast = Toast.makeText(getApplicationContext(), "SLUTA SKAKA MIG", Toast.LENGTH_LONG);
+                toast.show();
+                canShowToast = false;
+                new Handler().postDelayed(() -> canShowToast = true, TOAST_DELAY);
+            }
+            imageView.setRotation(x * 10);
 
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
             float lightBrightness = sensorEvent.values[0];
@@ -128,15 +117,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float alpha = lightBrightness / 40000f;
             imageView.setAlpha(alpha);
         }
-            
-        }
+
+    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
 
-        @Override
+    @Override
     public void onResume() {
         super.onResume();
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
