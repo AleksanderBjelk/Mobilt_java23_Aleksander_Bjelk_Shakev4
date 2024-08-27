@@ -23,19 +23,19 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     // De fyra olika funktionerna för att visa accelorometerns värden
-    TextView textX, textY, textZ;
-    ProgressBar progressBarHX, progressBarHY, progressBarHZ;
-    SeekBar SeekBarX, SeekBarY, SeekBarZ;
-    ImageView imageView;
+    private TextView textX, textY, textZ;
+    private ProgressBar progressBarHX, progressBarHY, progressBarHZ;
+    private SeekBar SeekBarX, SeekBarY, SeekBarZ;
+    private ImageView imageView;
 
-    SensorManager sensorManager;
-    Sensor sensor;
-    Sensor lightSensor;
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private Sensor lightSensor;
 
 
-    float Accel;
-    float AccelCurrent;
-    float AccelLast;
+    private float Accel;
+    private float AccelCurrent;
+    private float AccelLast;
     private boolean canShowToast = true;
     private static final long TOAST_DELAY = 2000;
 
@@ -130,6 +130,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this, sensor);
+        sensorManager.unregisterListener(this, lightSensor);
     }
 
     @Override
