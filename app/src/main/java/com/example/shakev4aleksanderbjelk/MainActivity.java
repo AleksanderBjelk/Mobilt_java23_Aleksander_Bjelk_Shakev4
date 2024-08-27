@@ -6,9 +6,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,14 +25,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView textX , textY ,textZ ;
     ProgressBar progressBarX, progressBarY, progressBarZ;
     ProgressBar progressBarHX, progressBarHY, progressBarHZ;
+    SeekBar SeekBarX, SeekBarY, SeekBarZ;
     ImageView imageView;
 
     SensorManager sensorManager;
     Sensor sensor;
+    Sensor lightSensor;
+
 
     float Accel;
     float AccelCurrent;
     float AccelLast;
+    private boolean canShowToast = true;  // Flag to control toast display
+    private static final long TOAST_DELAY = 2000;
 
 
 
@@ -41,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         progressBarX = findViewById(R.id.progressBarX);
@@ -50,6 +58,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         progressBarHX = findViewById(R.id.progressBarHX);
         progressBarHY = findViewById(R.id.progressBarHY);
         progressBarHZ = findViewById(R.id.progressBarHZ);
+
+        SeekBarX = findViewById(R.id.seekBarX);
+        SeekBarY = findViewById(R.id.seekBarY);
+        SeekBarZ = findViewById(R.id.seekBarZ);
 
         textX = findViewById(R.id.textX);
         textY = findViewById(R.id.textY);
@@ -75,9 +87,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        float x = sensorEvent.values[0]*10;
-        float y = sensorEvent.values[1]*10;
-        float z= sensorEvent.values[2]*10;
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+        float x = sensorEvent.values[0];
+        float y = sensorEvent.values[1];
+        float z= sensorEvent.values[2];
+
         AccelLast = AccelCurrent;
         AccelCurrent = (float) Math.sqrt((double) (x*x+y*y+z*z));
         float delta = AccelCurrent - AccelLast;
@@ -95,15 +109,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         progressBarHY.setProgress((int) Math.abs(y)*10);
         progressBarHZ.setProgress((int) Math.abs(z)*10);
 
-        if (Accel > 12) {
-            Toast toast = Toast.makeText(getApplicationContext(), "Device has shaken.", Toast.LENGTH_LONG);
-            toast.show();
-        }
+        SeekBarX.setProgress((int) Math.abs(x)*10);
+        SeekBarY.setProgress((int) Math.abs(y)*10);
+        SeekBarZ.setProgress((int) Math.abs(z)*10);
 
-        if (x > 10) {
-            imageView.setRotation(x);
+
+        if (Accel > 2 && canShowToast) {
+            Toast toast = Toast.makeText(getApplicationContext(), "SLUTA SKAKA MIG", Toast.LENGTH_LONG);
+            toast.show();
+            canShowToast = false;
+            new Handler().postDelayed(() -> canShowToast = true, TOAST_DELAY);
         }
-    }
+        imageView.setRotation(x*10);
+
+        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
+            float lightBrightness = sensorEvent.values[0];
+            Log.d("LightSensor", "Light brightness: " + lightBrightness);
+            float alpha = lightBrightness / 40000f;
+            imageView.setAlpha(alpha);
+        }
+            
+        }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
@@ -114,11 +140,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onResume() {
         super.onResume();
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         sensorManager.unregisterListener(this, sensor);
+        sensorManager.unregisterListener(this, lightSensor);
     }
 }
