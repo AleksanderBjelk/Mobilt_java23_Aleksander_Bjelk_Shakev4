@@ -7,7 +7,7 @@ Teacher: Alrik He
 ```
 
 ## Description
-In this assignment I have created a app where you can see values from the accelerometer and light sensor in different widgets.<br>
+In this assignment I have created an app where you can see values from the accelerometer and light sensor in different widgets.<br>
 <br>
 ### Functionality
 - You can see values from accelerometer in text
